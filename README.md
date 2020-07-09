@@ -8,6 +8,8 @@
 - Compare results with saved results for each timeslot in another txt file
 - Send email if better change for each timeslot
 
+# TODO : 
+- Save the search URL for quicker access
 
 # Useful URLs
 

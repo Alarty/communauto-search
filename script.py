@@ -4,6 +4,8 @@ import mechanize
 from bs4 import BeautifulSoup
 from http import cookiejar
 
+import utils
+
 with open('credentials.json') as json_file:
     credentials = json.load(json_file)
 
@@ -38,12 +40,28 @@ if credentials_needed:
     br.submit()
 
 for slot in slots_wanted:
+    dateBegin = f"{slot[2]}/{slot[1]}/{slot[0]} {slot[3]}:{slot[4]}"
+    dateEnd = f"{slot[7]}/{slot[6]}/{slot[5]} {slot[8]}:{slot[9]}"
+
     url_book_slot = url_book_header
     for idx, attr in enumerate(slot_header):
         url_book_slot += "&" + attr + "=" + slot[idx]
     br.open(url_book_slot)
     soup = BeautifulSoup(br.response().read().decode("utf-8"), features="lxml")
     soup = soup.find('table')
-    td_cars = soup.find_all('td', {'class' : 'greySpecial'})
-    print("Cars : ")
-    print(td_cars)
+    td_cars = soup.find_all('td', {'class': 'greySpecial'})
+    cars = []
+    if len(td_cars) > 0:
+        nb_cars = len(td_cars) // 3
+        print(dateBegin + " -> " + dateEnd + " : ")
+        for curr_car in range(0, nb_cars):
+            td_car = td_cars[curr_car * 3:(curr_car + 1) * 3]
+            station_name = td_car[0].text.strip()
+            station_ID = td_car[0].contents[1].attrs['href'].strip()
+            station_ID = station_ID.partition("StationID=")[2].partition("\'")[0]
+            station_stored_infos = utils.get_station(station_ID)
+            my_coords = td_car[1].contents[1].attrs['href'].strip()
+            my_coords = my_coords.partition("false, ")[2].partition(");")[0].split(",")[0:2]
+            car_desc = td_car[2].get_text(' ').strip()
+            distance = utils.get_distance(my_coords, [station_stored_infos['Longitude'], station_stored_infos['Latitude']])
+            print(f"* {station_name} at {distance}km : {car_desc}")
