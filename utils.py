@@ -2,7 +2,7 @@ from xml.etree.ElementTree import parse
 import math
 
 
-def get_station(station_id):
+def get_station_from_id(station_id):
     document = parse('ListStations.asp.xml')
     station = document.find(f'Station[@StationID="{station_id}"]')
     station.attrib['name'] = station.text
