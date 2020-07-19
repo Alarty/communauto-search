@@ -9,9 +9,10 @@
 - Send email if better change for each timeslot
 
 # TODO : 
-- Save the search URL for quicker access
+- Save the book URL for quicker access to booking in mail
 - Dynamic form filling depending the webpage shown
 - Try to keep session alive to avoid login each time
+- Scrap best 5 cars instead of 3
 
 # Useful URLs
 
