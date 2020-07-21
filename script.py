@@ -68,30 +68,33 @@ for slot in slots_wanted:
         url_book_slot += "&" + attr + "=" + str(date_url_strs_list[idx])
     br.open(url_book_slot)
 
+    print(url_book_slot)
     # scrap the webpage for the content
     soup = BeautifulSoup(br.response().read().decode("utf-8"), features="lxml")
     soup = soup.find('table')
-    td_cars = soup.find_all('td', {'class': 'greySpecial'})
+    soup_stations = soup.select("a[href*=InfoStation]")
+    soup_coords = soup.select("a[href*=BillingRulesAcpt]")
+    soup_descs = soup.find_all('td', {'align': "center", "width": "420"})[1:]
+    assert len(soup_stations) == len(soup_coords) == len(soup_descs)
+
     # slots to store everything
     slot = {"dateBegin": str_dateBegin, "dateEnd": str_dateEnd, "url": url_book_slot, "cars": []}
     # loop through the content to get each row of cars and extract it content
-    if len(td_cars) > 0:
-        nb_cars = len(td_cars) // 3
+    if len(soup_stations) > 0:
         # loop every 3 rows = every car
-        for curr_car in range(0, nb_cars):
-            td_car = td_cars[curr_car * 3:(curr_car + 1) * 3]
+        for car_idx in range(0, len(soup_stations)):
             # station name is just text of the html
-            station_name = td_car[0].text.strip()
+            station_name = soup_stations[car_idx].text.strip()
             # station id is part of the weblink of a tag, we have to extract it from str partitions
-            station_ID = td_car[0].contents[1].attrs['href'].strip()
+            station_ID = soup_stations[car_idx].attrs['href'].strip()
             station_ID = station_ID.partition("StationID=")[2].partition("\'")[0]
             # get station infos from id
             station_stored_infos = utils.get_station_from_id(station_ID)
             # user coordinates is part of the weblink of a tag, we have to extract it from str partitions
-            user_coords = td_car[1].contents[1].attrs['href'].strip()
+            user_coords = soup_coords[car_idx].attrs['href'].strip()
             user_coords = user_coords.partition("false, ")[2].partition(");")[0].split(",")[0:2]
             # car desc is just text of the html
-            car_desc = td_car[2].get_text(' ').strip()
+            car_desc = soup_descs[car_idx].get_text(' ').strip()
             # calculate distance between user coords and station coords from infos
             distance = utils.get_distance(user_coords,
                                           [station_stored_infos['Longitude'], station_stored_infos['Latitude']])
@@ -101,4 +104,4 @@ for slot in slots_wanted:
 flag_new, new_slots = utils.compare_results(slots, results_file)
 if flag_new:
     pprint.pprint(new_slots)
-utils.send_mail(new_slots)
+    utils.send_mail(new_slots, credentials["email_to"])

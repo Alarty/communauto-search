@@ -77,6 +77,8 @@ def compare_results(new_slots, file_name):
     if not os.path.isfile(file_name):
         with open(file_name, 'w') as json_file:
             json.dump(new_slots, json_file, indent=4, separators=(',', ': '))
+        new_flag = True
+        old_slots = new_slots
     else:
 
         # load the file
@@ -94,8 +96,11 @@ def compare_results(new_slots, file_name):
                     worst_old_distance = max([slot['distance'] for slot in old_slots[key]['cars']])
                     if best_new_distance < worst_old_distance:
                         print(f"New best car found for slot {key}")
-                        new_slots[key]['new'] = True
                         print(f"{get_new_slots_diff}")
+                        for idx, item in enumerate(new_slots[key]["cars"]):
+                            if item in get_new_slots_diff:
+                                new_slots[key]["cars"][idx]['new'] = True
+
                         old_slots[key] = new_slots[key]
                         new_flag = True
             else:
@@ -104,6 +109,29 @@ def compare_results(new_slots, file_name):
                 old_slots[key]['new'] = True
                 new_flag = True
 
+        # no matter what, rewrite the json file to keep the updated one
         # json.dump(old_slots, json_file, indent=4, separators=(',', ': '))
 
     return new_flag, old_slots
+
+
+def send_mail(slots, email_to):
+    print(f"send to {email_to}")
+    print(slots)
+    email_obj = "New changes in Communauto"
+    mail_txt = "These are the currently available cars in Communauto for your researches :\n\n\n"
+    for date_slot in slots.keys():
+        bold_entire_slot = False
+        if 'new' in slots[date_slot].keys():
+            bold_entire_slot = True
+            mail_txt += f"<b>"
+        mail_txt += f"For the timeslot {date_slot} ({slots[date_slot]['url']}) :\n"
+        for car in slots[date_slot]['cars']:
+            if 'new' in car.keys():
+                mail_txt += f"\t <b>{car['Name']} at {car['distance']}km : {car['description']}</b>\n"
+            else:
+                mail_txt += f"\t {car['Name']} at {car['distance']}km : {car['description']}\n"
+        if bold_entire_slot:
+            mail_txt += f"</b>"
+        mail_txt += "\n"
+    return None
