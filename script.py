@@ -6,15 +6,13 @@ import mechanize
 from bs4 import BeautifulSoup
 from http import cookiejar
 
+import os
+
 import utils
 
-credentials_file = 'credentials.json'
 slots_file = 'slots_wanted.csv'
 results_file = 'results.json'
 
-# get username and password for the login page
-with open(credentials_file) as json_file:
-    credentials = json.load(json_file)
 
 # load the user needed slots from csv (start and end : year, month, day, hour, minute)
 with open(slots_file) as csv_file:
@@ -46,8 +44,8 @@ if credentials_needed:
     br.submit()
     # submit the login form with user credentials
     br.select_form(nr=0)
-    br.form['Username'] = credentials['username']
-    br.form['Password'] = credentials['password']
+    br.form['Username'] = os.environ['communauto_user']
+    br.form['Password'] = os.environ['communauto_pwd']
     br.submit()
 
     # validate again the form to choose "communauto québec" for accessing the booking
@@ -104,4 +102,4 @@ for slot in slots_wanted:
 flag_new, new_slots = utils.compare_results(slots, results_file)
 if flag_new:
     pprint.pprint(new_slots)
-    utils.send_mail(new_slots, credentials["email_to"])
+    utils.send_mail(new_slots, os.environ["communauto_mailto"])

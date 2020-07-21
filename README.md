@@ -1,5 +1,17 @@
 # Python tool script to automate the search of a communauto near me
 
+You need to set you environment with these 3 variables :
+- <code>communauto_user</code> : the username to connect to the platform
+- <code>communauto_pwd</code> : the password to connect to the platform
+- <code>communauto_mailto</code> : the user who will recieve the emails
+
+If you run through Heroku, you can use : 
+- <code>heroku config:set communauto_user=USER communauto_pwd=PASSWORD communauto_mailto=EMAIL</code>
+Otherwise you can add these lines at the beginning of the file : 
+os.environ['communauto_user'] = USER
+os.environ['communauto_pwd'] = PASSWORD
+os.environ['communauto_mailto'] = EMAIL
+
 # Script phases : 
 - Choose dates and hours of need in txt file
 - Script every X minutes
