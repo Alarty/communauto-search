@@ -5,25 +5,39 @@ import pprint
 import mechanize
 from bs4 import BeautifulSoup
 from http import cookiejar
-
 import os
 
 import utils
 
-slots_file = 'slots_wanted.csv'
 results_file = 'results.json'
 
+# Load slots from static csv file or from google drive file
+internal_slots_file = 'slots_wanted.csv'
+if os.path.isfile(internal_slots_file):
+    # load the user needed slots from csv (start and end : year, month, day, hour, minute)
+    with open(internal_slots_file) as csv_file:
+        reader = csv.reader(csv_file)
+        # store the headers
+        slot_header = next(reader)
+        # store the rest into a array
+        slots_wanted = list(reader)
+else:
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
 
-# load the user needed slots from csv (start and end : year, month, day, hour, minute)
-with open(slots_file) as csv_file:
-    reader = csv.reader(csv_file)
-    # store the headers
-    slot_header = next(reader)
-    # store the rest into a array
-    slots_wanted = list(reader)
-    slots_wanted = utils.convert_to_dates(slots_wanted)
-    # do not test for dates already passed
-    slots_wanted = utils.remove_passed_dates(slots_wanted)
+    # use creds to create a client to interact with the Google Drive API
+    scope = ['https://spreadsheets.google.com/feeds',
+             'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('gdrive_client_secret.json', scope)
+    client = gspread.authorize(creds)
+    # Make sure you use the right name here
+    sheet = client.open("communauto-slots").sheet1
+    list_of_hashes = sheet.get_all_records()
+    slots_header = list(list_of_hashes[0].keys())
+    slots_wanted = [list(row.values()) for row in list_of_hashes]
+slots_wanted = utils.convert_to_dates(slots_wanted)
+# do not test for dates already passed
+slots_wanted = utils.remove_passed_dates(slots_wanted)
 
 credentials_needed = True
 
@@ -35,7 +49,6 @@ br.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78
 
 # start of a URL with parameters except date ones
 url_book_header = "https://www.reservauto.net/Scripts/client/ReservationDisponibility.asp?CurrentLanguageID=1&IgnoreError=False&CityID=59&StationID=C&CustomerLocalizationID=&OrderBy=2&Accessories=0&Brand=&ShowGrid=False&ShowMap=False&DestinationID=&FeeType=80"
-
 if credentials_needed:
     url_random = url_book_header + "&StartYear=2020&StartMonth=07&StartDay=11&StartHour=8&StartMinute=0&EndYear=2020&EndMonth=07&EndDay=12&EndHour=18&EndMinute=0"
     # submit the first form to choose "communauto québec"
@@ -52,6 +65,9 @@ if credentials_needed:
     br.select_form(nr=0)
     br.submit()
 slots = {}
+if len(slots_wanted) == 0:
+    print("Only old slots or no slots to look for")
+
 # for each slot of the csv file
 for slot in slots_wanted:
     str_dateBegin = f"{slot[0].day}/{slot[0].month}/{slot[0].year} {slot[0].hour}:{slot[0].minute}"

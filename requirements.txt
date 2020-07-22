@@ -1,3 +1,6 @@
 mechanize
 bs4
-beautifulsoup4
+
+# for GDrive usage
+gspread
+oauth2client
