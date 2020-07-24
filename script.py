@@ -18,7 +18,7 @@ if os.path.isfile(internal_slots_file):
     with open(internal_slots_file) as csv_file:
         reader = csv.reader(csv_file)
         # store the headers
-        slot_header = next(reader)
+        slots_header = next(reader)
         # store the rest into a array
         slots_wanted = list(reader)
 else:
@@ -88,7 +88,7 @@ for slot in slots_wanted:
     url_book_slot = url_book_header
     date_url_strs_list = [slot[0].year, slot[0].month, slot[0].day, slot[0].hour, slot[0].minute,
                           slot[1].year, slot[1].month, slot[1].day, slot[1].hour, slot[1].minute]
-    for idx, attr in enumerate(slot_header):
+    for idx, attr in enumerate(slots_header):
         url_book_slot += "&" + attr + "=" + str(date_url_strs_list[idx])
     br.open(url_book_slot)
 
