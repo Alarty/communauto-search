@@ -28,7 +28,14 @@ else:
     # use creds to create a client to interact with the Google Drive API
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('gdrive_client_secret.json', scope)
+
+    secret_name = "gdrive_client_secret"
+    if os.path.isfile(f"{secret_name}.json"):
+        creds = ServiceAccountCredentials.from_json_keyfile_name(f'{secret_name}.json', scope)
+    elif secret_name in os.environ.keys():
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(os.environ[secret_name]), scope)
+    else:
+        raise Exception(f"You should have a {secret_name}.json file or the json content of it as envvar")
     client = gspread.authorize(creds)
     # Make sure you use the right name here
     sheet = client.open("communauto-slots").sheet1
