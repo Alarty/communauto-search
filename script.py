@@ -33,9 +33,6 @@ else:
     if os.path.isfile(f"{secret_name}.json"):
         creds = ServiceAccountCredentials.from_json_keyfile_name(f'{secret_name}.json', scope)
     elif secret_name in os.environ.keys():
-        print(os.environ[secret_name])
-        print("****************************")
-        print(json.loads(os.environ[secret_name]))
         creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(os.environ[secret_name]), scope)
     else:
         raise Exception(f"You should have a {secret_name}.json file or the json content of it as envvar")

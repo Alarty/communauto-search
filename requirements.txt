@@ -1,5 +1,6 @@
 mechanize
 bs4
+lxml
 
 # for GDrive usage
 gspread
