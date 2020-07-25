@@ -27,6 +27,7 @@ else:
 
     # use creds to create a client to interact with the Google Drive API
     scope = ['https://spreadsheets.google.com/feeds',
+             'https://docs.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
 
     secret_name = "gdrive_client_secret"
