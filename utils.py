@@ -4,6 +4,11 @@ import math
 from datetime import datetime
 import os.path
 
+# for email sending
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
+
 
 def get_station_from_id(station_id):
     """
@@ -110,22 +115,22 @@ def compare_results(new_slots, file_name):
                 new_flag = True
 
         # no matter what, rewrite the json file to keep the updated one
-        # json.dump(old_slots, json_file, indent=4, separators=(',', ': '))
+        with open(file_name, 'w') as json_file:
+            json.dump(old_slots, json_file, indent=4, separators=(',', ': '))
 
     return new_flag, old_slots
 
 
-def send_mail(slots, email_to):
-    print(f"send to {email_to}")
-    print(slots)
-    email_obj = "New changes in Communauto"
+def send_mail(slots, to_email):
+
+    subject = "New changes in Communauto"
     mail_txt = "These are the currently available cars in Communauto for your researches :\n\n\n"
     for date_slot in slots.keys():
         bold_entire_slot = False
         if 'new' in slots[date_slot].keys():
             bold_entire_slot = True
             mail_txt += f"<b>"
-        mail_txt += f"For the timeslot {date_slot} ({slots[date_slot]['url']}) :\n"
+        mail_txt += f"<a href='{slots[date_slot]['url']}'>For the timeslot {date_slot} :</a>\n"
         for car in slots[date_slot]['cars']:
             if 'new' in car.keys():
                 mail_txt += f"\t <b>{car['Name']} at {car['distance']}km : {car['description']}</b>\n"
@@ -134,4 +139,10 @@ def send_mail(slots, email_to):
         if bold_entire_slot:
             mail_txt += f"</b>"
         mail_txt += "\n"
-    return None
+
+    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+    from_email = Email(os.environ.get('communauto_from'))
+    content = Content("text/plain", mail_txt)
+    mail = Mail(from_email=from_email, subject=subject, to_emails=to_email, html_content=content)
+    response = sg.client.mail.send.post(request_body=mail.get())
+    return response.status_code

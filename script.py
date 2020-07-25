@@ -126,3 +126,4 @@ flag_new, new_slots = utils.compare_results(slots, results_file)
 if flag_new:
     pprint.pprint(new_slots)
     utils.send_mail(new_slots, os.environ["communauto_mailto"])
+    print("Mail sent")

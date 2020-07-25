@@ -1,15 +1,17 @@
 # This is a Python tool script to automate the search of a Communauto near me (Montreal)
 
-It is linked to a Google Sheet and run through a Heroku dyno : https://communauto-search.herokuapp.com/
+It is linked to a Google Sheet, Sendgrid API and run through a Heroku dyno : https://communauto-search.herokuapp.com/
 
 I made it so that it run easily on my Heroku dyno but still can be used locally if needed
 
 #Setup 
 
-You need to set you environment with these 3 variables :
+You need to set you environment with these variables :
 - <code>communauto_user</code> : the username to connect to the platform
 - <code>communauto_pwd</code> : the password to connect to the platform
 - <code>communauto_mailto</code> : the user who will recieve the emails
+- <code>communauto_from</code> : the Sendgrid registered sender email
+
 If you run through Heroku, you can use instead : 
 - <code>heroku config:set communauto_user=USER communauto_pwd=PASSWORD communauto_mailto=EMAIL</code>
 Otherwise you can add them as environment variables in your IDE/code
@@ -22,6 +24,8 @@ There is few files that are needed amongst the code :
     - If you choose to store it in Google Drive, call the sheet <code>communauto-slots</code>, have the Google API credential file called <code>gdrive_client_secret.json</code> in your project folder.
 - A <code>gdrive_client_secret.json</code> only if you use Google Drive of course
     - You can have the file, or an environment variable called <code>gdrive_client_secret</code> containing the json (for a public use on Heroku)
+- A <code>results.json</code> file will be created and modified to store new results. To compare old/new results and send mail for new ones.
+    - If you run locally, everything is fine, it you run on Heroku, you should add a env var <code>gdrive_results</code> to 1 so that it look for <code>results.json</code> online. 
 
 # Script phases every X minutes : 
 - Loads dates and hours of need from the file (Google Sheet or local csv)
