@@ -1,7 +1,11 @@
-mechanize
-bs4
+mechanize~=0.4.5
+bs4~=0.0.1
 lxml
+sendgrid~=6.4.4
+beautifulsoup4~=4.9.1
 
 # for GDrive usage
-gspread
-oauth2client
+gspread~=3.6.0
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
