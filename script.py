@@ -38,6 +38,8 @@ else:
     results_fileid, old_slots = gdrive_conn.get_byte_file(results_filename)
     if old_slots is not None:
         old_slots = json.loads(old_slots)
+        print("old slots :")
+        print(old_slots)
 
 # Load the csv locally or with Gdrive connection
 # contains user needed slots (start and end : year, month, day, hour, minute)
@@ -137,13 +139,19 @@ for slot in slots_wanted:
             slot["cars"].append({"Name": station_name, "distance": distance, "description": car_desc})
         new_slots[id_slot] = slot
 
+print("new slots :")
+print(new_slots)
+
+
 flag_new, new_slots = utils.compare_results(new_slots, old_slots)
 
 # save the new json file containing most recent slots locally or in Gdrive
 if "gdrive_results" in os.environ.keys():
     gdrive_conn.save_byte_file(new_slots, results_fileid)
+    print(f"Results saved in {results_filename}")
 else:
     json.dump(new_slots, json_file, indent=4, separators=(',', ': '))
+    print(f"Results saved in {results_filename}.json")
 
 # send mail if something new happened
 if flag_new:

@@ -78,6 +78,7 @@ def compare_results(new_slots, old_slots):
     # flag if something new changed
     new_flag = False
     if old_slots is None:
+        print("There is no older slots stored, so this will trigger because everything is new")
         new_flag = True
     else:
         # for each datetime slot in new
