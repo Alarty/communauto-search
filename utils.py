@@ -85,6 +85,9 @@ def compare_results(new_slots, old_slots):
         for key in new_slots:
             # match the old one
             if key in old_slots.keys():
+                # remove "new" flag, used for mailing purpose and saved
+                for car in old_slots[key]["cars"]:
+                    car.pop("new", None)
                 get_new_slots_diff = [item for item in new_slots[key]['cars'] if item not in old_slots[key]['cars']]
                 if len(get_new_slots_diff) > 0:
                     best_new_distance = min([slot['distance'] for slot in get_new_slots_diff])
