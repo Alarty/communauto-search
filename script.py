@@ -69,10 +69,10 @@ slots_wanted = utils.convert_to_dates(slots_wanted)
 slots_wanted = utils.remove_passed_dates(slots_wanted)
 
 chrome_options = webdriver.ChromeOptions()
+chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--no-sandbox')
-driver = webdriver.Chrome(executable_path=os.environ.get("GOOGLE_CHROME_BIN", "chromedriver"))
-
+driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH", "chromedriver"), chrome_options=chrome_options)
 
 # update list of stations
 urllib.request.urlretrieve(url_liststation, liststation_filename)
