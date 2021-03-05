@@ -2,11 +2,8 @@ import ast
 import json
 import csv
 import pprint
-from http import cookiejar
 import os
-import mechanize
 import time
-import codecs
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
