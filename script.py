@@ -12,12 +12,9 @@ import urllib.request
 import utils
 import GDriveConnection
 
-GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
-CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
 results_filename = 'results'
 internal_slots_filename = 'communauto-slots'
-chromedriver_path = './venv/chromedriver.exe'
 liststation_filename = 'ListStations.xml'
 
 url_liststation = 'https://www.reservauto.net/Scripts/Ajax/Stations/ListStations.asp'
@@ -74,8 +71,8 @@ slots_wanted = utils.remove_passed_dates(slots_wanted)
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--no-sandbox')
-chrome_options.binary_location = GOOGLE_CHROME_PATH
-browser = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+driver = webdriver.Chrome(executable_path=os.environ.get("GOOGLE_CHROME_BIN", "chromedriver"))
+
 
 # update list of stations
 urllib.request.urlretrieve(url_liststation, liststation_filename)
