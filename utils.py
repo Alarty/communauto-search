@@ -13,9 +13,12 @@ def get_station_from_id(station_id):
     :param station_id: the int of the station to look in the communauto list
     :return: the station dict with all attributes
     """
-    document = parse('ListStations.asp.xml')
+    print('look for stationID : ', station_id)
+    document = parse('ListStations.xml')
     station = document.find(f'Station[@StationID="{station_id}"]')
     station.attrib['name'] = station.text
+    print('Station name : ', station.text)
+
     return station.attrib
 
 
@@ -125,7 +128,7 @@ def send_mail(slots, to_email):
         if 'new' in slots[date_slot].keys():
             bold_entire_slot = True
             mail_txt += f"<b>"
-        mail_txt += f"<a href='{slots[date_slot]['url']}'>For the timeslot {date_slot} :</a><br>"
+        mail_txt += f"For the timeslot {date_slot} :<br>"
         for car in slots[date_slot]['cars']:
             # add a bold tag for a brand new car available
             if 'new' in car.keys():

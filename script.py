@@ -4,16 +4,28 @@ import csv
 import pprint
 from http import cookiejar
 import os
-
 import mechanize
+import time
+import codecs
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.support.ui import Select
+import urllib.request
 
 import utils
 import GDriveConnection
 
+GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
+
 results_filename = 'results'
 internal_slots_filename = 'communauto-slots'
+chromedriver_path = './venv/chromedriver.exe'
+liststation_filename = 'ListStations.xml'
 
+url_liststation = 'https://www.reservauto.net/Scripts/Ajax/Stations/ListStations.asp'
+url_login = 'https://quebec.client.reservauto.net/legacy/login?locale=fr-CA'
+url_reservation = 'https://quebec.client.reservauto.net/bookCar'
 # Create the connection to Gdrive if needed (with json file or env var)
 gdrive_conn = None
 if "gdrive_results" in os.environ.keys():
@@ -52,6 +64,9 @@ if os.path.isfile(f"{internal_slots_filename}.csv"):
         slots_wanted = list(reader)
 else:
     rows = gdrive_conn.get_sheet_file(internal_slots_filename)
+    if len(rows) == 0:
+        print("Only old slots or no slots to look for. Stop execution here")
+        exit()
     slots_header = list(rows[0].keys())
     slots_wanted = [list(row.values()) for row in rows]
 
@@ -59,36 +74,23 @@ slots_wanted = utils.convert_to_dates(slots_wanted)
 # do not test for dates already passed
 slots_wanted = utils.remove_passed_dates(slots_wanted)
 
-if len(slots_wanted) == 0:
-    print("Only old slots or no slots to look for. Stop execution here")
-    exit()
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.binary_location = GOOGLE_CHROME_PATH
+browser = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
 
-# create the fake browser
-cj = cookiejar.CookieJar()
-br = mechanize.Browser()
-br.set_cookiejar(cj)
-br.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0')]
+# update list of stations
+urllib.request.urlretrieve(url_liststation, liststation_filename)
 
-# store start of a URL with parameters except date ones
-url_book_header = "https://www.reservauto.net/Scripts/client/ReservationDisponibility.asp?CurrentLanguageID=1&IgnoreError=False&CityID=59&StationID=C&CustomerLocalizationID=&OrderBy=2&Accessories=0&Brand=&ShowGrid=False&ShowMap=False&DestinationID=&FeeType=80"
+# login
+driver.get(url_login)
+time.sleep(3)
+print('---')
 
-# Log into website
-credentials_needed = True
-if credentials_needed:
-    url_random = url_book_header + "&StartYear=2020&StartMonth=07&StartDay=11&StartHour=8&StartMinute=0&EndYear=2020&EndMonth=07&EndDay=12&EndHour=18&EndMinute=0"
-    # submit the first form to choose "communauto québec"
-    br.open(url_random)
-    br.select_form(nr=0)
-    br.submit()
-    # submit the login form with user credentials
-    br.select_form(nr=0)
-    br.form['Username'] = os.environ['communauto_user']
-    br.form['Password'] = os.environ['communauto_pwd']
-    br.submit()
-
-    # validate again the form to choose "communauto Québec" for accessing the booking
-    br.select_form(nr=0)
-    br.submit()
+login = driver.find_element_by_id("Username").send_keys(os.environ['communauto_user'])
+password = driver.find_element_by_id("Password").send_keys(os.environ['communauto_pwd'])
+submit = driver.find_element_by_id("btnlogin").click()
 
 new_slots = {}
 # for each slot of the csv file
@@ -97,18 +99,36 @@ for slot in slots_wanted:
     str_dateEnd = f"{slot[1].day}/{slot[1].month}/{slot[1].year} {slot[1].hour}:{slot[1].minute}"
     id_slot = f"{str_dateBegin}->{str_dateEnd}"
 
-    # generate url from params
-    url_book_slot = url_book_header
-    date_url_strs_list = [slot[0].year, slot[0].month, slot[0].day, slot[0].hour, slot[0].minute,
-                          slot[1].year, slot[1].month, slot[1].day, slot[1].hour, slot[1].minute]
-    for idx, attr in enumerate(slots_header):
-        url_book_slot += "&" + attr + "=" + str(date_url_strs_list[idx])
-    # open the url
-    br.open(url_book_slot)
-    print(f"Look for slot : {id_slot} = {url_book_slot}")
+    print(f"Look for slot : {id_slot}")
 
+    # fill the form
+    driver.get(url_reservation)
+    time.sleep(6)
+    # go to the reservation that is in an iframe
+    driver.switch_to.frame(0)
+    driver.find_element_by_id("StartYear").clear()
+    driver.find_element_by_id("StartYear").send_keys(slot[0].year)
+    driver.find_element_by_id("StartMonth").clear()
+    driver.find_element_by_id("StartMonth").send_keys(slot[0].month)
+    driver.find_element_by_id("StartDay").clear()
+    driver.find_element_by_id("StartDay").send_keys(slot[0].day)
+    driver.find_element_by_id("StartHour").send_keys(slot[0].hour)
+    driver.find_element_by_id("StartMinute").send_keys(slot[0].minute)
+    driver.find_element_by_id("EndYear").clear()
+    driver.find_element_by_id("EndYear").send_keys(slot[1].year)
+    driver.find_element_by_id("EndMonth").clear()
+    driver.find_element_by_id("EndMonth").send_keys(slot[1].month)
+    driver.find_element_by_id("EndDay").clear()
+    driver.find_element_by_id("EndDay").send_keys(slot[1].day)
+    driver.find_element_by_id("EndHour").send_keys(slot[1].hour)
+    driver.find_element_by_id("EndMinute").send_keys(slot[1].minute)
+
+    Select(driver.find_element_by_id("FeeType")).select_by_value('81')  # longue distance
+    Select(driver.find_element_by_name("DestinationID")).select_by_value('1')  # longue quebec
+    submit = driver.find_element_by_id("Button_Disponibility").click()
+    time.sleep(6)
     # scrap the webpage for the content
-    soup = BeautifulSoup(br.response().read().decode("utf-8"), features="lxml")
+    soup = BeautifulSoup(driver.page_source, features="lxml")
     soup = soup.find('table')
     soup_stations = soup.select("a[href*=InfoStation]")
     soup_coords = soup.select("a[href*=BillingRulesAcpt]")
@@ -116,7 +136,7 @@ for slot in slots_wanted:
     assert len(soup_stations) == len(soup_coords) == len(soup_descs)
 
     # slots to store everything
-    slot = {"dateBegin": str_dateBegin, "dateEnd": str_dateEnd, "url": url_book_slot, "cars": []}
+    slot = {"id": id_slot, "cars": []}
     # loop through the content to get each row of cars and extract it content
     if len(soup_stations) > 0:
         # loop every 3 rows = every car
@@ -139,9 +159,9 @@ for slot in slots_wanted:
             slot["cars"].append({"Name": station_name, "distance": distance, "description": car_desc})
         new_slots[id_slot] = slot
 
+driver.quit()
 print("new slots :")
 print(new_slots)
-
 
 flag_new, new_slots = utils.compare_results(new_slots, old_slots)
 
