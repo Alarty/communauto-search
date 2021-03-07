@@ -3,6 +3,7 @@ lxml
 sendgrid~=6.4.4
 beautifulsoup4~=4.9.1
 selenium~=3.141.0
+webdriver-manager
 
 # for GDrive usage
 gspread~=3.6.0

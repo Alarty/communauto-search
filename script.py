@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 import urllib.request
+from webdriver_manager.chrome import ChromeDriverManager
 
 import utils
 import GDriveConnection
@@ -68,11 +69,13 @@ slots_wanted = utils.convert_to_dates(slots_wanted)
 # do not test for dates already passed
 slots_wanted = utils.remove_passed_dates(slots_wanted)
 
+
 chrome_options = webdriver.ChromeOptions()
-chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
-chrome_options.add_argument('--disable-gpu')
-chrome_options.add_argument('--no-sandbox')
-driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH", "chromedriver"), chrome_options=chrome_options)
+chrome_options.add_argument("window-size=1920x1480")
+chrome_options.add_argument("disable-dev-shm-usage")
+driver = webdriver.Chrome(
+    chrome_options=chrome_options, executable_path=ChromeDriverManager().install()
+)
 
 # update list of stations
 urllib.request.urlretrieve(url_liststation, liststation_filename)
