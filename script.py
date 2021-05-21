@@ -14,7 +14,7 @@ import utils
 import GDriveConnection
 
 
-results_filename = 'results'
+results_filename = 'communauto-results'
 internal_slots_filename = 'communauto-slots'
 liststation_filename = 'ListStations.xml'
 
@@ -120,8 +120,8 @@ for slot in slots_wanted:
     driver.find_element_by_id("EndHour").send_keys(slot[1].hour)
     driver.find_element_by_id("EndMinute").send_keys(slot[1].minute)
 
-    Select(driver.find_element_by_id("FeeType")).select_by_value('81')  # longue distance
-    Select(driver.find_element_by_name("DestinationID")).select_by_value('1')  # longue quebec
+    # Select(driver.find_element_by_id("FeeType")).select_by_value('81')  # longue distance plus besoin
+    # Select(driver.find_element_by_name("DestinationID")).select_by_value('1')  # longue quebec
     submit = driver.find_element_by_id("Button_Disponibility").click()
     time.sleep(6)
     # scrap the webpage for the content
@@ -168,7 +168,7 @@ if "gdrive_results" in os.environ.keys():
     print(f"Results saved in {results_filename}")
 else:
     json.dump(new_slots, json_file, indent=4, separators=(',', ': '))
-    print(f"Results saved in {results_filename}.json")
+    print(f"Results saved in {results_filename}.txt")
 
 # send mail if something new happened
 if flag_new:
