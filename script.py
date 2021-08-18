@@ -164,7 +164,7 @@ flag_new, new_slots = utils.compare_results(new_slots, old_slots)
 
 # save the new json file containing most recent slots locally or in Gdrive
 if "gdrive_results" in os.environ.keys():
-    gdrive_conn.save_byte_file(new_slots, results_fileid)
+    gdrive_conn.save_byte_file(new_slots, results_fileid, results_filename)
     print(f"Results saved in {results_filename}")
 else:
     json.dump(new_slots, json_file, indent=4, separators=(',', ': '))
