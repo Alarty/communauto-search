@@ -78,7 +78,7 @@ driver = webdriver.Chrome(
 )
 
 # update list of stations
-urllib.request.urlretrieve(url_liststation, liststation_filename)
+# urllib.request.urlretrieve(url_liststation, liststation_filename)
 
 # login
 driver.get(url_login)
