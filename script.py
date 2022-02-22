@@ -64,11 +64,12 @@ else:
         exit()
     slots_header = list(rows[0].keys())
     slots_wanted = [list(row.values()) for row in rows]
+emails = [row[-1] for row in slots_wanted]
+slots_wanted = [row[:-1] for row in slots_wanted]
 
 slots_wanted = utils.convert_to_dates(slots_wanted)
 # do not test for dates already passed
 slots_wanted = utils.remove_passed_dates(slots_wanted)
-
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("window-size=1920x1480")
@@ -90,12 +91,13 @@ password = driver.find_element_by_id("Password").send_keys(os.environ['communaut
 submit = driver.find_element_by_id("btnlogin").click()
 
 new_slots = {}
+slots_id = []
 # for each slot of the csv file
 for slot in slots_wanted:
     str_dateBegin = f"{slot[0].day}/{slot[0].month}/{slot[0].year} {slot[0].hour}:{slot[0].minute}"
     str_dateEnd = f"{slot[1].day}/{slot[1].month}/{slot[1].year} {slot[1].hour}:{slot[1].minute}"
     id_slot = f"{str_dateBegin}->{str_dateEnd}"
-
+    slots_id.append(id_slot)
     print(f"Look for slot : {id_slot}")
 
     # fill the form
@@ -172,12 +174,19 @@ else:
 
 # send mail if something new happened
 if flag_new:
-    pprint.pprint(new_slots)
     # if we pass a list (stringyfied), convert it to list again
     to_email = os.environ["communauto_mailto"]
-    if '[' in to_email:
-        to_email = ast.literal_eval(to_email)
-    utils.send_mail(new_slots, to_email)
+    for i in range(0, len(slots_id)):
+        to_email = emails[i]
+        print(slots_id[i])
+        # because some slots can be deleted if no rows for example
+        if slots_id[i] in new_slots.keys():
+            slot = new_slots[slots_id[i]]
+            print(to_email)
+            print(slot)
+            if '[' in to_email:
+                to_email = ast.literal_eval(to_email)
+            utils.send_mail(slot, to_email)
     print("Mail sent")
 else:
     print("No changes occurs")

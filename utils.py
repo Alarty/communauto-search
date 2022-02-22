@@ -16,9 +16,16 @@ def get_station_from_id(station_id):
     print('look for stationID : ', station_id)
     document = parse('ListStations.xml')
     station = document.find(f'Station[@StationID="{station_id}"]')
-    station.attrib['name'] = station.text
-    print('Station name : ', station.text)
-
+    if station is not None:
+        station.attrib['name'] = station.text
+        print('Station name : ', station.text)
+    else:
+        # take default station because it's a new one not found
+        station = document.find(f'Station[@StationID="120"]')
+        station.attrib['name'] = 'Unknown'
+        station.attrib['Latitude'] = '0'
+        station.attrib['Longitude'] = '0'
+        print('Station name : Unknown')
     return station.attrib
 
 
@@ -110,10 +117,10 @@ def compare_results(new_slots, old_slots):
     return new_flag, new_slots
 
 
-def send_mail(slots, to_email):
+def send_mail(slot, to_email):
     """
-    from a specific dict of slots, send an email to the addresses
-    :param slots: dict containing all available slots with tags for new ones
+    from a specific dict of slot, send an email to the addresses
+    :param slot: the slot with tags for new ones
     :param to_email: Address or list of address
     :return: status code of email sent
     """
@@ -122,22 +129,21 @@ def send_mail(slots, to_email):
 
     mail_txt = "<html><head></head><body><h1>These are the currently available cars in Communauto for your researches " \
                ":</h1><br><br><br> "
-    for date_slot in slots.keys():
-        bold_entire_slot = False
-        # add a bold tag for a brand new slot
-        if 'new' in slots[date_slot].keys():
-            bold_entire_slot = True
-            mail_txt += f"<b>"
-        mail_txt += f"For the timeslot {date_slot} :<br>"
-        for car in slots[date_slot]['cars']:
-            # add a bold tag for a brand new car available
-            if 'new' in car.keys():
-                mail_txt += f"&nbsp;&nbsp;&nbsp; <b>{car['Name']} at {car['distance']}km : {car['description']}</b><br>"
-            else:
-                mail_txt += f"&nbsp;&nbsp;&nbsp; {car['Name']} at {car['distance']}km : {car['description']}<br>"
-        if bold_entire_slot:
-            mail_txt += f"</b>"
-        mail_txt += "<br>"
+    bold_entire_slot = False
+    # add a bold tag for a brand new slot
+    if 'new' in slot.keys():
+        bold_entire_slot = True
+        mail_txt += f"<b>"
+    mail_txt += f"For the timeslot {slot['id']} :<br>"
+    for car in slot['cars']:
+        # add a bold tag for a brand new car available
+        if 'new' in car.keys():
+            mail_txt += f"&nbsp;&nbsp;&nbsp; <b>{car['Name']} at {car['distance']}km : {car['description']}</b><br>"
+        else:
+            mail_txt += f"&nbsp;&nbsp;&nbsp; {car['Name']} at {car['distance']}km : {car['description']}<br>"
+    if bold_entire_slot:
+        mail_txt += f"</b>"
+    mail_txt += "<br>"
 
     mail_txt += "</body></html>"
 
