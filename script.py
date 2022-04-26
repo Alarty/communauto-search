@@ -86,9 +86,9 @@ driver.get(url_login)
 time.sleep(3)
 print('---')
 
-login = driver.find_element_by_id("Username").send_keys(os.environ['communauto_user'])
-password = driver.find_element_by_id("Password").send_keys(os.environ['communauto_pwd'])
-submit = driver.find_element_by_id("btnlogin").click()
+login = driver.find_element_by_name("Username").send_keys(os.environ['communauto_user'])
+password = driver.find_element_by_name("Password").send_keys(os.environ['communauto_pwd'])
+submit = driver.find_element_by_class_name("mui-uvke0w").click()
 
 new_slots = {}
 slots_id = []
