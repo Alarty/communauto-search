@@ -83,12 +83,12 @@ driver = webdriver.Chrome(
 
 # login
 driver.get(url_login)
-time.sleep(3)
+time.sleep(10)
 print('---')
 
 login = driver.find_element_by_name("Username").send_keys(os.environ['communauto_user'])
 password = driver.find_element_by_name("Password").send_keys(os.environ['communauto_pwd'])
-submit = driver.find_element_by_class_name("mui-uvke0w").click()
+submit = driver.find_element_by_class_name("tss-1em8k63-submitButton").click()
 
 new_slots = {}
 slots_id = []
@@ -102,7 +102,7 @@ for slot in slots_wanted:
 
     # fill the form
     driver.get(url_reservation)
-    time.sleep(6)
+    time.sleep(12)
     # go to the reservation that is in an iframe
     driver.switch_to.frame(0)
     driver.find_element_by_id("StartYear").clear()

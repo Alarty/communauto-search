@@ -21,7 +21,7 @@ def get_station_from_id(station_id):
         print('Station name : ', station.text)
     else:
         # take default station because it's a new one not found
-        station = document.find(f'Station[@StationID="120"]')
+        station = document.find(f'Station[@StationID="2574"]')
         station.attrib['name'] = 'Unknown'
         station.attrib['Latitude'] = '0'
         station.attrib['Longitude'] = '0'
